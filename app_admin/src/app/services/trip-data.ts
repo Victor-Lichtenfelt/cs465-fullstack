@@ -9,8 +9,10 @@ import { Trip } from '../models/trip';
 })
 
 export class TripData {
-    constructor(private http: HttpClient) {}
+    
     url = 'http://localhost:3000/api/trips';
+
+    constructor(private http: HttpClient) {}
 
     getTrips() : Observable<Trip[]> {
         return this.http.get<Trip[]>(this.url);

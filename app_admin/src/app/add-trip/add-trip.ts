@@ -13,7 +13,7 @@ import { TripData } from '../services/trip-data';
 })
 
 export class AddTrip implements OnInit {
-  addForm!: FormGroup;
+  public addForm!: FormGroup;
   submitted = false;
 
   constructor (
@@ -23,6 +23,7 @@ export class AddTrip implements OnInit {
   ) {}
 
   ngOnInit() {
+    console.log('add-trip::ngOnInit');
      this.addForm = this.formBuilder.group({
       _id: [], 
       code: ['', Validators.required], 

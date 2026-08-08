@@ -8,7 +8,7 @@ import { Trip } from '../models/trip';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './trip-card.html',
-  styleUrl: './trip-card.css',
+  styleUrl: './trip-card.css'
 })
 
 export class TripCard implements OnInit {
@@ -17,7 +17,7 @@ export class TripCard implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    
+    console.log('ngOnInit,trip-card');
   }
   
   public editTrip(trip: Trip) {

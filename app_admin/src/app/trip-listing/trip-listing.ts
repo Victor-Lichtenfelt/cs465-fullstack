@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component,  OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TripCard } from '../trip-card/trip-card';
 
@@ -23,7 +23,8 @@ export class TripListing implements OnInit {
 
   constructor(
     private tripData: TripData,
-    private router: Router) {
+    private router: Router,
+    private changeDetector: ChangeDetectorRef) {
     console.log('trip-listing constructor');
   }
 
@@ -49,6 +50,7 @@ export class TripListing implements OnInit {
             this.message = 'There were no trips retireved from the database';
           }
           console.log(this.message);
+          this.changeDetector.markForCheck();
         },
         error: (error: any) => {
           console.log('Error: ' + error);
@@ -57,8 +59,9 @@ export class TripListing implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('ngOnInit');
+    console.log('trip-listing::ngOnInit');
     this.getStuff();
+    
   }
 }
 
