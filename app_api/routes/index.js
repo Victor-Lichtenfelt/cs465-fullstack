@@ -4,26 +4,31 @@ const express = require('express');
 const router = express.Router();
 
 const tripsController = require('../controllers/trips');
-const authController = require('../controllers/authentication');
+const authenController = require('../controllers/authentication');
+const authorController = require('../controllers/authorization');
 
-//Method to authenticate our JWT:
-function authenticateJWT(req, res, next) {
-    //console.log('In Middleware');
+//Method to simplify our JWT:
+function extractJWT(req, res, next) {
+    console.log('In Middleware');
 
     const authHeader = req.headers['authorization'];
-    //console.log('Auth Header: ' + authHeader);
+    console.log('Auth Header: ' + authHeader);
 
     if(authHeader == null)
     {
-        console.log('Auth Header Required but NOT PRESENT!');
-        return res.sendStatus(401);
+        req.tokenError = 'Auth Header Required but NOT PRESENT!';
+        req.HTMLcode = 401;
+        next();
+        return;
     }
-
+   
     let headers = authHeader.split(' ');
     if(headers.length < 1)
     {
-        console.log('Not enough tokens in Auth Header: ' + headers.length);
-        return res.sendStatus(501);
+        req.tokenError = ('Not enough tokens in Auth Header: ' + headers.length);
+        req.HTMLcode = 501;
+        next();
+        return;
     }
 
     const token = authHeader.split(' ')[1];
@@ -31,8 +36,10 @@ function authenticateJWT(req, res, next) {
 
     if(token == null)
     {
-        console.log('Null Bearer Token');
-        return res.sendStatus(401);
+        req.tokenError = 'Null Bearer Token';
+        req.HTMLcode = 401;
+        next();
+        return;
     }
 
     //console.log(process.env.JWT_SECRET);
@@ -40,30 +47,59 @@ function authenticateJWT(req, res, next) {
     const verified = jwt.verify(token, process.env.JWT_SECRET, (err, verified) => {
         if(err)
         {
-            return res.sendStatus(401).json('Token Validation Error!');
+            req.json = 'Auth Header Required but NOT PRESENT!';
+            req.HTMLcode = 401;
         }
-        req.auth = verified; // Set the auth paramtor the decoded obhect.
+        else
+        {
+            console.log('ReallyOddIfHereWhileNull' + authHeader);
+            req.auth = verified;
+        }
     });
+
+    next(); //We need to continute or this will hang forever
+}
+
+//Method to authenticate our JWT:
+function authenticateJWT(req, res, next) {
+    ///console.log('In Middleware');
+
+    if(req.auth == null)
+    {
+        if(req.tokenError != null)
+        {
+            console.log(req.tokenError);
+        }
+
+        if(req.json == null)
+        {
+            return res.sendStatus(req.HTMLcode);
+        }
+
+        return res.sendStatus(req.HTMLcode).json(req.json);
+    }
+
     next(); //We need to coninute or this will hang forever
 }
 
+
 router.route("/login")
-    .post(authController.login);
+    .post(authenController.login);
 
 router.route("/register")
-    .post(authController.register);
+    .post(authenController.register);
 
 //Define route for out trips endpoint
 router
     .route('/trips')
-    .get(tripsController.tripsList)
-    .post(authenticateJWT, tripsController.tripsAddTrip);
+    .get(extractJWT, authorController.extractUserInfo , tripsController.tripsList)
+    .post(extractJWT, authenticateJWT, authorController.extractUserInfo, tripsController.tripsAddTrip);
 
 //GET Method routes tripsFindByCode - requires parameter
 //PUT Method routes tripsUpdateTrip - requires parameter
 router
     .route('/trips/:tripCode')
-    .get(tripsController.tripsFindByCode)
-    .put(authenticateJWT, tripsController.tripsUpdateTrip);
+    .get(extractJWT, authorController.extractUserInfo, tripsController.tripsFindByCode)
+    .put(extractJWT, authenticateJWT, authorController.extractUserInfo, tripsController.tripsUpdateTrip);
 
 module.exports = router;

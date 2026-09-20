@@ -44,7 +44,7 @@ export class Login {
   }
 
   private doLogin(): void {
-    let newUser = {
+    let loggingInUser = { 
       name: this.credentials.name,
       email: this.credentials.email
     } as User;
@@ -52,7 +52,7 @@ export class Login {
      console.log('LoginComponent::doLogin');
      console.log(this.credentials);
 
-    this.authenticationService.login(newUser, this.credentials.password);
+    this.authenticationService.login(loggingInUser, this.credentials.password);
 
     if(this.authenticationService.isLoggedIn())
     {

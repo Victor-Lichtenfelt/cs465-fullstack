@@ -47,7 +47,8 @@ export class EditTrip implements OnInit{
       resort: ['', Validators.required],
       perPerson: ['', Validators.required],
       image: ['', Validators.required],
-      description: ['', Validators.required]
+      description: ['', Validators.required],
+      publicity: [false]
     });
 
     this.tripDataService.getTrip(tripCode)

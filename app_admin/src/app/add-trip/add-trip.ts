@@ -34,6 +34,7 @@ export class AddTrip implements OnInit {
       perPerson: ['', Validators.required], 
       image: ['', Validators.required], 
       description: ['', Validators.required],
+      publicity: [false]
      })
   }
 

@@ -1,14 +1,25 @@
 const mongoose = require('mongoose');
 const Trip = require('../models/travlr'); //Register Model.
-const Model = mongoose.model('trips');
+const TripModel = mongoose.model('trips');
+const err = {message: "error"};
 
 // GET: /trips - lists all the trips
 // Regardless of outcome, response must include HTML status code
 // and JSON message to the requesting client
 const tripsList = async(req, res) => {
-    const q = await Model
-        .find({}) // No filter, return all records
+
+    console.log("Start tripsList Function");
+
+    if(req.auth == null)
+    {
+        const q = await TripModel
+        .find(
+                {publicity: true}
+            ) // Filter, return all public.
         .exec();
+
+        console.log("In null, got public trips.");
+    
 
         // Uncomment the following line to show results of query
         // on the console.
@@ -24,28 +35,140 @@ const tripsList = async(req, res) => {
                 .status(200)
                 .json(q);
         }
+    }
+
+    
+    
+
+    console.log("Got past null auth.");
+    
+    if(req.admin == true)
+    {
+        const q = await TripModel
+            .find(
+                    {}
+                ) // No filter.
+            .exec();
+
+        if(!q)
+        { //Database returned no data.
+            return res
+                .status(404)
+                .json(err);
+        } else { //Return resulting trip list
+            return res
+                .status(200)
+                .json(q);
+        }
+    }
+
+    console.log("Roles has no information.");
+
+    const q = await TripModel
+        .find(
+                {$or:
+                    [
+                        {publicity: true},
+                        {author: req.userId},
+                        {editors: req.userId}
+                    ]
+                }
+            ) // Filter, return all public or allowed to view.
+        .exec();
+    
+
+    // Uncomment the following line to show results of query
+    // on the console.
+    // console.log(q);
+
+    if(!q)
+    { //Database returned no data.
+        return res
+            .status(404)
+            .json(err);
+    } else { //Return resulting trip list
+        return res
+            .status(200)
+            .json(q);
+    }
 };
 
 // GET: /trips/tripCode - lists a single trip
 // Regardless of outcome, response must include HTML status code
 // and JSON message to the requesting client
 const tripsFindByCode = async(req, res) => {
-    const q = await Model
-        .find({'code' : req.params.tripCode}) //Return single record
-        .exec();
+    if(req.auth == null)
+    {
+        const q = await TripModel
+            .find({'code' : req.params.tripCode, publicity: true}) //Return single record
+            .exec();
 
-    //Uncomment the following line to show results of query
-    // on the console
+        //Uncomment the following line to show results of query
+        // on the console
+        // console.log(q);
+
+        if(!q)
+        { // Database returned no data
+            return res
+                .status(404)
+                .json(err);
+        }
+        else
+        { // Return resulting trip list
+            return res
+                .status(200)
+                .json(q);
+        }
+    }
+
+    if(req.admin == true)
+    {
+        const q = await TripModel
+            .find({'code' : req.params.tripCode}) //Return single record
+            .exec();
+
+        //Uncomment the following line to show results of query
+        // on the console
+        // console.log(q);
+
+        if(!q)
+        { // Database returned no data
+            return res
+                .status(404)
+                .json(err);
+        }
+        else
+        { // Return resulting trip list
+            return res
+                .status(200)
+                .json(q);
+        }
+    }
+
+    const q = await TripModel
+        .find(
+                {'code' : req.params.tripCode,
+                    $or:
+                        [
+                            {publicity: true},
+                            {author: req.userId},
+                            {editors: req.userId}
+                        ]
+                }
+            ) // Filter, return all public or allowed to view.
+        .exec();
+    
+
+    // Uncomment the following line to show results of query
+    // on the console.
     // console.log(q);
 
     if(!q)
-    { // Database returned no data
+    { //Database returned no data.
         return res
             .status(404)
             .json(err);
-    }
-    else
-    { // Return resulting trip list
+    } else { //Return resulting trip list
         return res
             .status(200)
             .json(q);
@@ -64,7 +187,9 @@ const tripsAddTrip = async(req, res) => {
         resort: req.body.resort,
         perPerson: req.body.perPerson,
         image: req.body.image,
-        description: req.body.description
+        description: req.body.description,
+        publicity: req.body.publicity,
+        author: req.userId
     });
 
     const q = await newTrip.save();
@@ -91,8 +216,30 @@ const tripsUpdateTrip = async(req, res) => {
     // Uncomment for debugging
     //console.log(req.params);
     //console.log(req.body);
+    
+    if(req.admin != true)
+    {
+        const p = await TripModel
+            .find(
+                    {'code' : req.params.tripCode, $or:
+                        [
+                            {author: req.userId},
+                            {editors: req.userId}
+                        ]
+                    }
+                )
+            .lean()
+            .exec();
 
-    const q = await Model
+        if(!p || p.length === 0)
+        {   
+            return res
+                .status(401)
+                .json(err);
+        }
+    }
+
+    const q = await TripModel
         .findOneAndUpdate(
             { 'code' : req.params.tripCode },
             {
@@ -103,7 +250,8 @@ const tripsUpdateTrip = async(req, res) => {
                 resort: req.body.resort,
                 perPerson: req.body.perPerson,
                 image: req.body.image,
-                description: req.body.description
+                description: req.body.description,
+                publicity: req.body.publicity
             }
         )
         .exec();

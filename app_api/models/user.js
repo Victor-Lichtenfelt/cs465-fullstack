@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const roles = require('./role');
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -13,7 +14,13 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     hash: String,
-    salt: String
+    salt: String,
+    roles: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: roles
+        }
+    ]
 });
 
 //Method to set the password on this record.
@@ -31,7 +38,7 @@ userSchema.methods.validPassword = function(password) {
 //Method to generate a JSON Web Token for the current record.
 userSchema.methods.generateJWT = function() {
     return jwt.sign(
-        { //Payload for out JSON Web Token
+        { //Payload for our JSON Web Token
             _id: this._id,
             email: this.email,
             name: this.name
