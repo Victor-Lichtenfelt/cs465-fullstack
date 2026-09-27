@@ -1,0 +1,94 @@
+<div class="col-md-4"> 
+    <h2 class="text-center">Query Controls</h2> 
+    <form 
+    *ngIf="queryForm" 
+    [formGroup]="queryForm"
+    (ngSubmit)="onSubmit()"> 
+ 
+        <div class="form-group"> 
+            <label>Start Of Searched Dates:</label> 
+            <input 
+            type="date" 
+            formControlName="beginAcceptableDate"  
+            placeholder="First Date " 
+            class="form-control" 
+            > 
+        </div>
+
+        <div class="form-group"> 
+            <label>End Of Searched Dates:</label> 
+            <input 
+            type="date" 
+            formControlName="endAcceptableDate"  
+            placeholder="endAcceptableDate" 
+            class="form-control" 
+            > 
+        </div>
+
+        <!--
+
+        <div class="form-group"> 
+            <label>Start Of Acceptable Price:</label> 
+            <input 
+            type="text" 
+            formControlName="beginAcceptablePrice"  
+            placeholder="beginAcceptablePrice" 
+            class="form-control" 
+            > 
+        </div>
+
+        <div class="form-group"> 
+            <label>End Of Acceptable Price:</label> 
+            <input 
+            type="text" 
+            formControlName="endAcceptablePrice"  
+            placeholder="endAcceptablePrice" 
+            class="form-control" 
+            > 
+        </div>
+
+        <div class="form-group"> 
+            <label>Start Of Acceptable Quality:</label> 
+            <input 
+            type="text" 
+            formControlName="beginAcceptableQuality"  
+            placeholder="beginAcceptableQuality" 
+            class="form-control" 
+            > 
+        </div>
+
+        <div class="form-group"> 
+            <label>End Of Acceptable Quality:</label> 
+            <input 
+            type="text" 
+            formControlName="endAcceptableQuality"  
+            placeholder="endAcceptableQuality" 
+            class="form-control" 
+            > 
+        </div>
+
+        <div class="form-group"> 
+            <label>Start Of Acceptable Length:</label> 
+            <input 
+            type="text" 
+            formControlName="beginAcceptableLength"  
+            placeholder="beginAcceptableLength" 
+            class="form-control" 
+            > 
+        </div>
+
+        <div class="form-group"> 
+            <label>End Of Acceptable Length:</label> 
+            <input 
+            type="text" 
+            formControlName="endAcceptableLength"  
+            placeholder="endAcceptableLength" 
+            class="form-control" 
+            > 
+        </div>
+      </div>
+    -->
+
+    <button type="submit" class="btn btn-info">Query Database</button> 
+    </form> 
+</div>

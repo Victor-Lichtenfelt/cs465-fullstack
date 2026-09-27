@@ -7,13 +7,15 @@ import { Trip } from '../models/trip';
 import { User } from '../models/user';
 import { AuthResponse } from '../models/auth-response';
 import { BROWSER_STORAGE } from '../storage';
+import { FormGroup } from '@angular/forms';
+import { Query } from '../models/query';
 
 @Injectable({
     providedIn: 'root'
 })
 
 export class TripData {
-    
+    advancedUrl = 'http://localhost:3000/api/trips/advancedQuery';
     url = 'http://localhost:3000/api/trips';
     baseUrl = 'http://localhost:3000/api';
 
@@ -49,6 +51,10 @@ export class TripData {
 
     getTrips() : Observable<Trip[]> {
         return this.http.get<Trip[]>(this.url);
+    }
+
+    getQueryTrips(formData: Query) : Observable<Trip[]> {
+        return this.http.post<Trip[]>(this.advancedUrl, formData);
     }
 
     addTrip(formData: Trip) : Observable<Trip> {

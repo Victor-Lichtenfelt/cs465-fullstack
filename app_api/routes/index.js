@@ -92,14 +92,18 @@ router.route("/register")
 //Define route for out trips endpoint
 router
     .route('/trips')
-    .get(extractJWT, authorController.extractUserInfo , tripsController.tripsList)
-    .post(extractJWT, authenticateJWT, authorController.extractUserInfo, tripsController.tripsAddTrip);
+    .get(extractJWT, authorController.extractQueryInfo , tripsController.tripsList)
+    .post(extractJWT, authenticateJWT, tripsController.tripsAddTrip);
+
+router
+    .route('/trips/advancedQuery')
+    .post(extractJWT, authorController.extractAdvancedQueryInfo, authorController.extractQueryInfo, tripsController.tripsList);
 
 //GET Method routes tripsFindByCode - requires parameter
 //PUT Method routes tripsUpdateTrip - requires parameter
 router
     .route('/trips/:tripCode')
-    .get(extractJWT, authorController.extractUserInfo, tripsController.tripsFindByCode)
-    .put(extractJWT, authenticateJWT, authorController.extractUserInfo, tripsController.tripsUpdateTrip);
+    .get(extractJWT, authorController.extractQueryInfo, tripsController.tripsFindByCode)
+    .put(extractJWT, authenticateJWT, authorController.extractEditInfo, tripsController.tripsUpdateTrip);
 
 module.exports = router;
