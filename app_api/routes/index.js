@@ -12,7 +12,7 @@ function extractJWT(req, res, next) {
     console.log('In Middleware');
 
     const authHeader = req.headers['authorization'];
-    console.log('Auth Header: ' + authHeader);
+    console.log('   Auth Header: ' + authHeader);
 
     if(authHeader == null)
     {
@@ -32,7 +32,7 @@ function extractJWT(req, res, next) {
     }
 
     const token = authHeader.split(' ')[1];
-    //console.log('Token: ' + token);
+    console.log('   Token: ' + token);
 
     if(token == null)
     {
@@ -42,17 +42,20 @@ function extractJWT(req, res, next) {
         return;
     }
 
+    //console.log('?!?');
     //console.log(process.env.JWT_SECRET);
     //console.log(jwt.decode(token));
+
     const verified = jwt.verify(token, process.env.JWT_SECRET, (err, verified) => {
         if(err)
         {
+            console.log('   Token Invalid!');
             req.json = 'Auth Header Required but NOT PRESENT!';
             req.HTMLcode = 401;
         }
         else
         {
-            console.log('ReallyOddIfHereWhileNull' + authHeader);
+            console.log('   Verified!');
             req.auth = verified;
         }
     });
@@ -89,21 +92,26 @@ router.route("/login")
 router.route("/register")
     .post(authenController.register);
 
+   
 //Define route for out trips endpoint
 router
-    .route('/trips')
-    .get(extractJWT, authorController.extractQueryInfo , tripsController.tripsList)
-    .post(extractJWT, authenticateJWT, tripsController.tripsAddTrip);
+    .route('/trips') 
+    .get(extractJWT, authorController.extractQueryInfo ,  tripsController.tripsList)
+    .post(extractJWT, authenticateJWT, authorController.extractUserInfo, tripsController.tripsAddTrip);
 
+    /*
 router
     .route('/trips/advancedQuery')
     .post(extractJWT, authorController.extractAdvancedQueryInfo, authorController.extractQueryInfo, tripsController.tripsList);
 
 //GET Method routes tripsFindByCode - requires parameter
 //PUT Method routes tripsUpdateTrip - requires parameter
+*/
+
 router
     .route('/trips/:tripCode')
     .get(extractJWT, authorController.extractQueryInfo, tripsController.tripsFindByCode)
     .put(extractJWT, authenticateJWT, authorController.extractEditInfo, tripsController.tripsUpdateTrip);
 
+    
 module.exports = router;

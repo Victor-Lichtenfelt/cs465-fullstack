@@ -38,17 +38,33 @@
       </div> 
  
       <div class="form-group"> 
-        <label>Length:</label> 
+        <label>Length (Days):</label> 
         <input 
         type="text" 
-        formControlName="length"  
-        placeholder="Name" 
+        formControlName="lengthDays"  
+        placeholder="E.g. 3, 4..." 
         class="form-control" 
-        [ngClass]="{ 'is-invalid': submitted && f['length'].errors }"
+        [ngClass]="{ 'is-invalid': submitted && f['lengthDays'].errors }"
         > 
-        <div *ngIf="submitted && f['length'].errors"> 
-          <div *ngIf="f['length'].errors?.['required']"> 
-             Length is required 
+        <div *ngIf="submitted && f['lengthDays'].errors"> 
+          <div *ngIf="f['lengthDays'].errors?.['required']"> 
+             Length (Days) is required 
+           </div> 
+        </div> 
+      </div>
+
+      <div class="form-group"> 
+        <label>Length (Nights):</label> 
+        <input 
+        type="text" 
+        formControlName="lengthNights"  
+        placeholder="E.g. 3, 4..." 
+        class="form-control" 
+        [ngClass]="{ 'is-invalid': submitted && f['lengthNights'].errors }"
+        > 
+        <div *ngIf="submitted && f['lengthNights'].errors"> 
+          <div *ngIf="f['lengthNights'].errors?.['required']"> 
+             Length (Nights) is required 
            </div> 
         </div> 
       </div> 

@@ -1,6 +1,6 @@
 const passport = require('passport');
-const mongoose = require('mongoose');
-const User = require('../models/user');
+const MySQL = require('../models/db');
+const Password = require('../models/password');
 
 const register = async(req, res) => {
     //Validate message to insure that all parameters are present.
@@ -10,30 +10,41 @@ const register = async(req, res) => {
             .json({"message": "All fields required"});
     }
 
-    const user = new User(
+    let user = 
         {
             name: req.body.name,    // Set user name
             email: req.body.email,  // Set e-mail address
-            password: ''            // Start with empty password
+            ... Password.setPassword(req.body.password)
+        };
+
+    try
+    {
+        await MySQL.insertSingleRow('users',user);
+        var qResult = await MySQL.viewSingleRowByTrait('users', 'email', req.body.email);
+        user = {... user, ...{id: qResult.id}};
+
+        if (!qResult)
+        {
+            //Database returned no data
+            return res
+                .status(400)
+                .json({"message": "FailedToInsertAnything",
+                    "datavalue": qResult
+                });
         }
-    );
-
-    user.setPassword(req.body.password); // Set user password
-    const q = await user.save();
-
-    if (!q)
-    {
-        //Database returned no data
-        return res
-            .status(400)
-            .json(err);
+        else
+        {
+            const token = Password.generateJWT(user);
+            return res
+                .status(200)
+                .json(token);
+        }
     }
-    else
+    catch (err)
     {
-        const token = user.generateJWT();
         return res
-            .status(200)
-            .json(token);
+            .status(404)
+            .json({"error": err});
     }
 };
 
@@ -56,7 +67,7 @@ const login = (req, res) => {
 
         if (user) {
             // Auth succeeded - generate JWT and return to caller
-            const token = user.generateJWT();
+            const token = Password.generateJWT(user);
             return res
                 .status(200)
                 .json({token});

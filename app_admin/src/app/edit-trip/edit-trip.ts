@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule} from "@angular/forms";
 import { TripData } from '../services/trip-data';
-import { Trip } from '../models/trip';
 import { DeclareVarStmt } from '@angular/compiler';
 import { errorContext } from 'rxjs/internal/util/errorContext';
 
@@ -17,7 +16,6 @@ import { errorContext } from 'rxjs/internal/util/errorContext';
 
 export class EditTrip implements OnInit{
   public editForm!: FormGroup;
-  trip!: Trip;
   submitted = false;
   message : string = '';
 
@@ -42,7 +40,8 @@ export class EditTrip implements OnInit{
       _id: [],
       code: [tripCode, Validators.required],
       name: ['', Validators.required],
-      length: ['', Validators.required],
+      lengthDays: ['', Validators.required],
+      lengthNights: ['', Validators.required], 
       start: ['', Validators.required],
       resort: ['', Validators.required],
       perPerson: ['', Validators.required],
@@ -54,8 +53,7 @@ export class EditTrip implements OnInit{
     this.tripDataService.getTrip(tripCode)
       .subscribe({
         next: (value: any) => {
-          this.trip = value;
-          this.editForm.patchValue(value[0]);
+          this.editForm.patchValue(value);
           if(!value)
           {
             this.message = 'No Trip Retrieved!';
@@ -69,7 +67,7 @@ export class EditTrip implements OnInit{
         error: (error: any) => {
           console.log('Error: ' + error);
         }
-      })
+      });
   }
 
   public onSubmit()

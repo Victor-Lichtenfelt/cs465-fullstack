@@ -4,6 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+require('dotenv').config();
+
 var indexRouter = require('./app_server/routes/index');
 var usersRouter = require('./app_server/routes/users');
 var travelRouter = require('./app_server/routes/travel');
@@ -14,7 +16,6 @@ var handlebars = require('hbs');
 var passport = require('passport');
 require('./app_api/config/passport');
 
-require('dotenv').config();
 
 //Bring in the database
 require('./app_api/models/db');

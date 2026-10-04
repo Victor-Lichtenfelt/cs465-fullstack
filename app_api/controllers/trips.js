@@ -1,20 +1,25 @@
-const mongoose = require('mongoose');
-const Trip = require('../models/travlr'); //Register Model.
-const TripModel = mongoose.model('trips');
-const err = {message: "error"};
+
+const MySQL = require('../models/db');
+const errorMessage = {message: "No elements selected."};
 
 // GET: /trips - lists all the trips
 // Regardless of outcome, response must include HTML status code
 // and JSON message to the requesting client
 const tripsList = async(req, res) => {
-
     console.log("Start tripsList Function");
 
-    const q = await TripModel
-    .find(
-            req.query
-        ) // Filter, return all public.
-    .exec();
+    let q;
+
+    try {
+        console.log(req.query);
+        q = await MySQL.viewRowsConditional('trips', req.query);
+    }
+    catch (err)
+    {
+        return res
+            .status(404)
+            .json(err);
+    }
 
 
     // Uncomment the following line to show results of query
@@ -24,8 +29,8 @@ const tripsList = async(req, res) => {
     if(!q)
     { //Database returned no data.
         return res
-            .status(404)
-            .json(err);
+            .status(400)
+            .json(errorMessage);
     } else { //Return resulting trip list
         return res
             .status(200)
@@ -37,9 +42,25 @@ const tripsList = async(req, res) => {
 // Regardless of outcome, response must include HTML status code
 // and JSON message to the requesting client
 const tripsFindByCode = async(req, res) => {
-    const q = await TripModel
-        .find({... req.query , ... {'code' : req.params.tripCode}}) //Return single record
-        .exec();
+    console.log("Start tripsFindByCode Function");
+
+    let q;
+
+    try {
+        //console.log(req.query);
+        var example = await MySQL.makeEqualCondition('code', req.params.tripCode);
+        req.query.push(example);
+        q = await MySQL.viewRowsConditional('trips', req.query);
+        q[0].start = q[0].start.toISOString().split('T', 1)[0];
+        //console.log(q[0].start);
+    }
+    catch (err)
+    {
+        return res
+            .status(404)
+            .json(err);
+    }
+
 
     //Uncomment the following line to show results of query
     // on the console
@@ -48,25 +69,27 @@ const tripsFindByCode = async(req, res) => {
     if(!q)
     { // Database returned no data
         return res
-            .status(404)
-            .json(err);
+            .status(400)
+            .json(errorMessage);
     }
     else
     { // Return resulting trip list
         return res
             .status(200)
-            .json(q);
+            .json(q[0]);
     }
 };
+
 
 //POST: /trips = Adds a new Trip
 // Regardless of outcome, response must include HTML status code
 // and JSON message to the requesting client
 const tripsAddTrip = async(req, res) => {
-    const newTrip = new Trip({
+    const newTrip = {
         code: req.body.code,
         name: req.body.name,
-        length: req.body.length,
+        lengthDays: req.body.lengthDays,
+        lengthNights: req.body.lengthNights,
         start: req.body.start,
         resort: req.body.resort,
         perPerson: req.body.perPerson,
@@ -74,23 +97,24 @@ const tripsAddTrip = async(req, res) => {
         description: req.body.description,
         publicity: req.body.publicity,
         author: req.userId
-    });
+    };
 
-    const q = await newTrip.save();
-
-    if(!q)
+    try
+    {
+        await MySQL.insertSingleRow('trips',newTrip);
+    }
+    catch (err)
     {
         return res
-            .status(400)
+            .status(404)
             .json(err);
     }
-    else
-    {
-        return res
-            .status(201)
-            .json(q);
-    }
+
+    return res
+        .status(201)
+        .json({});
 };
+
 
 //PUT: /trips/:tripCode - Adds a new Trip
 // Regardless of outcome, response must include HTML status code
@@ -101,40 +125,38 @@ const tripsUpdateTrip = async(req, res) => {
     //console.log(req.params);
     //console.log(req.body);
 
-    const q = await TripModel
-        .findOneAndUpdate(
-            { ... req.edit, ... {'code' : req.params.tripCode} },
-            {
-                code: req.body.code,
-                name: req.body.name,
-                length: req.body.length,
-                start: req.body.start,
-                resort: req.body.resort,
-                perPerson: req.body.perPerson,
-                image: req.body.image,
-                description: req.body.description,
-                publicity: req.body.publicity
-            }
-        )
-        .exec();
-    
-        if(!q)
-        {
-            return res
-                .status(400)
-                .json(err);
-        }
-        else
-        {
-            return res
-                .status(201)
-                .json(q);
-        }
+    const updateTrip = {
+        code: req.body.code,
+        name: req.body.name,
+        lengthDays: req.body.lengthDays,
+        lengthNights: req.body.lengthNights,
+        start: req.body.start,
+        resort: req.body.resort,
+        perPerson: req.body.perPerson,
+        image: req.body.image,
+        description: req.body.description,
+        publicity: req.body.publicity
+    };
 
-        //Uncomment the following line to show results of operation
-        // on the console
-        // console.log(q);
+    try
+    {
+        var example = await MySQL.makeEqualCondition('code', req.params.tripCode);
+        req.edit.push(example);
+        await MySQL.updateRowsConditional('trips',updateTrip, req.edit);
+    }
+    catch (err)
+    {
+        return res
+            .status(404)
+            .json(err);
+    }
+    
+        
+    return res
+        .status(201)
+        .json({});
 };
+
 
 module.exports = {
     tripsList,
@@ -142,3 +164,4 @@ module.exports = {
     tripsAddTrip,
     tripsUpdateTrip
 };
+
